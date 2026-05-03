@@ -46,7 +46,7 @@ services:
       NEXT_PRIVATE_SIGNING_LOCAL_FILE_PATH: ${NEXT_PRIVATE_SIGNING_LOCAL_FILE_PATH:-/opt/documenso/cert.p12}
       NEXT_PRIVATE_SIGNING_PASSPHRASE: ${NEXT_PRIVATE_SIGNING_PASSPHRASE}
     ports:
-      - '${PORT:-3000}:3000'
+      - '${DOCUMENSO_HOST_PORT:-3005}:3000'
     volumes:
       - signing-certs:/opt/documenso
 
