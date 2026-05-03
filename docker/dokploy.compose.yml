@@ -23,6 +23,8 @@ services:
     environment:
       MINIO_ROOT_USER: ${NEXT_PRIVATE_UPLOAD_ACCESS_KEY_ID:-documenso}
       MINIO_ROOT_PASSWORD: ${NEXT_PRIVATE_UPLOAD_SECRET_ACCESS_KEY:?Set NEXT_PRIVATE_UPLOAD_SECRET_ACCESS_KEY in Dokploy}
+    ports:
+      - '${MINIO_API_HOST_PORT:-9000}:9000'
     volumes:
       - uploads:/data
 
