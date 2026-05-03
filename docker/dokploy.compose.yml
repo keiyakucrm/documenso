@@ -1,0 +1,55 @@
+name: documenso-dokploy
+
+services:
+  database:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-documenso}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in Dokploy}
+      POSTGRES_DB: ${POSTGRES_DB:-documenso}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-documenso}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - database:/var/lib/postgresql/data
+
+  documenso:
+    image: ${DOCUMENSO_IMAGE:-ghcr.io/keiyakucrm/documenso:latest}
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      PORT: ${PORT:-3000}
+      NEXT_PUBLIC_WEBAPP_URL: ${NEXT_PUBLIC_WEBAPP_URL:-https://sign.keiyaku.xyz}
+      NEXT_PRIVATE_INTERNAL_WEBAPP_URL: ${NEXT_PRIVATE_INTERNAL_WEBAPP_URL:-http://documenso:3000}
+      NEXT_PRIVATE_DATABASE_URL: ${NEXT_PRIVATE_DATABASE_URL:-postgresql://${POSTGRES_USER:-documenso}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB:-documenso}}
+      NEXT_PRIVATE_DIRECT_DATABASE_URL: ${NEXT_PRIVATE_DIRECT_DATABASE_URL:-postgresql://${POSTGRES_USER:-documenso}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB:-documenso}}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?Set NEXTAUTH_SECRET in Dokploy}
+      NEXT_PRIVATE_ENCRYPTION_KEY: ${NEXT_PRIVATE_ENCRYPTION_KEY:?Set NEXT_PRIVATE_ENCRYPTION_KEY in Dokploy}
+      NEXT_PRIVATE_ENCRYPTION_SECONDARY_KEY: ${NEXT_PRIVATE_ENCRYPTION_SECONDARY_KEY:?Set NEXT_PRIVATE_ENCRYPTION_SECONDARY_KEY in Dokploy}
+      NEXT_PUBLIC_UPLOAD_TRANSPORT: ${NEXT_PUBLIC_UPLOAD_TRANSPORT:-database}
+      NEXT_PRIVATE_SMTP_TRANSPORT: ${NEXT_PRIVATE_SMTP_TRANSPORT:-smtp}
+      NEXT_PRIVATE_SMTP_HOST: ${NEXT_PRIVATE_SMTP_HOST:?Set NEXT_PRIVATE_SMTP_HOST in Dokploy}
+      NEXT_PRIVATE_SMTP_PORT: ${NEXT_PRIVATE_SMTP_PORT:-587}
+      NEXT_PRIVATE_SMTP_USERNAME: ${NEXT_PRIVATE_SMTP_USERNAME}
+      NEXT_PRIVATE_SMTP_PASSWORD: ${NEXT_PRIVATE_SMTP_PASSWORD}
+      NEXT_PRIVATE_SMTP_SECURE: ${NEXT_PRIVATE_SMTP_SECURE:-false}
+      NEXT_PRIVATE_SMTP_FROM_NAME: ${NEXT_PRIVATE_SMTP_FROM_NAME:-Keiyaku}
+      NEXT_PRIVATE_SMTP_FROM_ADDRESS: ${NEXT_PRIVATE_SMTP_FROM_ADDRESS:?Set NEXT_PRIVATE_SMTP_FROM_ADDRESS in Dokploy}
+      NEXT_PUBLIC_DISABLE_SIGNUP: ${NEXT_PUBLIC_DISABLE_SIGNUP:-false}
+      NEXT_PRIVATE_ALLOWED_SIGNUP_DOMAINS: ${NEXT_PRIVATE_ALLOWED_SIGNUP_DOMAINS}
+      NEXT_PRIVATE_SIGNING_TRANSPORT: ${NEXT_PRIVATE_SIGNING_TRANSPORT:-local}
+      NEXT_PRIVATE_SIGNING_LOCAL_FILE_PATH: ${NEXT_PRIVATE_SIGNING_LOCAL_FILE_PATH:-/opt/documenso/cert.p12}
+      NEXT_PRIVATE_SIGNING_PASSPHRASE: ${NEXT_PRIVATE_SIGNING_PASSPHRASE}
+    ports:
+      - '${PORT:-3000}:3000'
+    volumes:
+      - signing-certs:/opt/documenso
+
+volumes:
+  database:
+  signing-certs:
