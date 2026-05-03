@@ -74,3 +74,12 @@ tmp/
 
 # opencode
 .opencode/package-lock.json
+
+# Local signing certificate material - never commit
+private.key
+certificate.crt
+certificate.p12
+certificate.p12.base64
+certificate.p12.password.local
+*.p12
+*.key
